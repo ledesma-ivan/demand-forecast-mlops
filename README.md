@@ -6,7 +6,7 @@ Pipeline de ML de punta a punta para forecasting de demanda retail — desde los
 
 ## Stack tecnológico
 
-`Python` · `Scikit-learn` · `XGBoost` · `Pandas` · `NumPy` · `MLflow` · `FastAPI` · `Uvicorn`
+`Python` · `Scikit-learn` · `XGBoost` · `Pandas` · `NumPy` · `MLflow` · `FastAPI` · `Uvicorn` · `Docker`
 
 ---
 
@@ -15,25 +15,47 @@ Pipeline de ML de punta a punta para forecasting de demanda retail — desde los
 - Entrena un modelo de forecasting de demanda sobre datos históricos de retail (tienda, departamento, fecha)
 - Registra cada experimento (parámetros, métricas, artefactos) con **MLflow**
 - Expone predicciones a través de una API REST con **FastAPI**
+- Orquesta el entrenamiento y la UI de MLflow mediante **Docker Compose**
 
 ---
 
 ## Estructura del proyecto
 
 ```
-├── data/            # Datasets crudos y procesados
-├── notebooks/       # EDA y experimentación
-├── src/             # Código fuente del pipeline y la API
-│   └── api/         # Aplicación FastAPI
-├── models/          # Modelos entrenados serializados
-├── mlruns/          # Artefactos de MLflow
-├── run_pipeline.py  # Punto de entrada: entrenar, evaluar y registrar
+├── data/                # Datasets crudos y procesados
+├── notebooks/           # EDA y experimentación
+├── src/                 # Código fuente del pipeline y la API
+│   └── api/             # Aplicación FastAPI
+├── models/              # Modelos entrenados serializados
+├── mlruns/              # Artefactos de MLflow
+├── Dockerfile           # Imagen base del proyecto
+├── docker-compose.yml   # Orquestación: training job + MLflow UI
+├── run_pipeline.py      # Punto de entrada: entrenar, evaluar y registrar
 └── requirements.txt
 ```
 
 ---
 
 ## Inicio rápido
+
+### Opción A — Con Docker (recomendado)
+
+```bash
+# Levantar MLflow UI + job de entrenamiento
+docker compose up --build
+```
+
+| Servicio | URL |
+|----------|-----|
+| MLflow UI | http://localhost:5000 |
+
+Para correr solo el entrenamiento:
+
+```bash
+docker compose run training_job
+```
+
+### Opción B — Local
 
 ```bash
 # 1. Crear y activar entorno virtual
