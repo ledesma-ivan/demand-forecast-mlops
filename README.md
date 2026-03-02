@@ -26,13 +26,6 @@ pip install -r requirements.txt
 python run_pipeline.py
 ```
 
-## Desactivar entorno
-
-```bash
-deactivate
-```
-
-```
 ```
 ## Levantar interfaz grafica de ml flow
 
@@ -40,5 +33,10 @@ deactivate
 mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlruns
 ```
 
+## Desactivar entorno
 
+```bash
+deactivate
+```
 
+```
