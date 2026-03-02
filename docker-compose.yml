@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  # Servicio 1: El servidor de la interfaz de MLflow
+  mlflow_ui:
+    build: .
+    container_name: walmart_mlflow_ui
+    ports:
+      - "5000:5000"
+    command: mlflow ui --backend-store-uri sqlite:////app/mlflow_data/mlflow.db --default-artifact-root /app/mlruns --host 0.0.0.0 --port 5000
+    volumes:
+      - ./mlruns:/app/mlruns
+      - mlflow_data:/app/mlflow_data
+
+  # Servicio 2: Tu script de entrenamiento
+  training_job:
+    build: .
+    container_name: walmart_training_job
+    command: python main.py
+    environment:
+      # Le decimos al script que apunte a la base de datos compartida
+      - MLFLOW_TRACKING_URI=sqlite:////app/mlflow_data/mlflow.db
+    volumes:
+      - ./data:/app/data         # Sincroniza tu carpeta de datos local con la del contenedor
+      - ./src:/app/src           # Si cambias código en src, se refleja en el contenedor
+      - ./mlruns:/app/mlruns     # Guarda los modelos entrenados en tu PC
+      - mlflow_data:/app/mlflow_data
+    depends_on:
+      - mlflow_ui
+
+# Volumen nombrado para compartir la base de datos SQLite entre los contenedores
+volumes:
+  mlflow_data:
