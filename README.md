@@ -1,9 +1,7 @@
-````markdown
-# Proyecto
-
 ## Crear entorno virtual
 
 ### Windows
+
 ```bash
 python3 -m venv venv
 venv\Scripts\activate
