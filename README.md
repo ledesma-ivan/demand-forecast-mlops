@@ -1,0 +1,38 @@
+````markdown
+# Proyecto
+
+## Crear entorno virtual
+
+### Windows
+```bash
+python3 -m venv venv
+venv\Scripts\activate
+````
+
+### Mac / Linux
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+## Instalar dependencias
+
+```bash
+pip install -r requirements.txt
+```
+
+## Ejecutar pipeline
+
+```bash
+python run_pipeline.py
+```
+
+## Desactivar entorno
+
+```bash
+deactivate
+```
+
+```
+```
