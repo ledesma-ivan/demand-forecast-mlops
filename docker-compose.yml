@@ -16,7 +16,7 @@ services:
   training_job:
     build: .
     container_name: walmart_training_job
-    command: python main.py
+    command: python run_pipeline.py
     environment:
       # Le decimos al script que apunte a la base de datos compartida
       - MLFLOW_TRACKING_URI=sqlite:////app/mlflow_data/mlflow.db
