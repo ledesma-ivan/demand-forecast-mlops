@@ -6,14 +6,15 @@ Pipeline de ML de punta a punta para forecasting de demanda retail — desde los
 
 ## Stack tecnológico
 
-`Python` · `Pandas` · `NumPy`· `SQLite` · `Scikit-learn` · `XGBoost` · `TensorFlow` · `Matplotlib` · `Plotly` · `MLflow` · `FastAPI` · `Uvicorn` · `Docker`
+`Python` · `Pandas` · `NumPy` · `SQLite` · `PyArrow` · `Scikit-learn` · `XGBoost` · `Prophet` · `TensorFlow` · `Matplotlib` · `Plotly` · `MLflow` · `FastAPI` · `Uvicorn` · `Docker`
 
 ---
 
 ## ¿Qué hace?
 
-- Entrena y compara múltiples modelos de forecasting (XGBoost, TensorFlow) sobre datos históricos de retail (tienda, departamento, fecha)
-- Aplica feature engineering sobre variables temporales y de contexto de negocio
+- Entrena y compara múltiples modelos de forecasting (XGBoost, Prophet, TensorFlow) sobre datos históricos de retail (tienda, departamento, fecha)
+- Implementa una feature store local con Parquet para persistencia y reutilización de features entre runs
+- Aplica feature engineering avanzado sobre variables temporales, markdowns, lags y series cruzadas
 - Registra cada experimento (parámetros, métricas, artefactos) con **MLflow** para gestión del ciclo de vida del modelo
 - Expone predicciones a través de una API REST con **FastAPI**
 - Orquesta el entrenamiento y la UI de MLflow mediante **Docker Compose**
@@ -23,12 +24,12 @@ Pipeline de ML de punta a punta para forecasting de demanda retail — desde los
 ## Decisiones técnicas
 
 - **EDA:** análisis exploratorio sobre el dataset de Walmart para identificar estacionalidad semanal, impacto de feriados y variabilidad por departamento
-- **Feature engineering:** extracción de variables temporales (semana, mes, trimestre), lags de ventas y codificación de tienda/departamento
-- **Modelos evaluados:**  XGBoost como baseline, Prophet para capturar estacionalidad y tendencia, y red neuronal con TensorFlow para patrones no lineales
+- **Feature store:** implementación local con Parquet (PyArrow) para persistencia y reutilización de features entre runs
+- **Feature engineering:** variables temporales (semana, mes, trimestre, fin de año), markdowns, lags de ventas (1, 2, 4, 8, 52 semanas), rolling statistics (media, std, máx) y features cruzadas entre tiendas y departamentos
+- **Modelos evaluados:** XGBoost como baseline, Prophet para capturar estacionalidad y tendencia, y red neuronal con TensorFlow para patrones no lineales
 - **Métricas de evaluación:** RMSE y MAPE por modelo, registradas automáticamente en MLflow para comparación entre runs
-- **Almacenamiento:**: Base de datos SQLite para persistencia de experimentos MLflow y consulta de datos via SQL
-- **Visualización:** Visualización: Matplotlib para análisis exploratorio en notebooks, Plotly para gráficos interactivos de comparación entre XGBoost, Prophet y TensorFlow vs ventas reales
-
+- **Almacenamiento:** SQLite para persistencia de experimentos MLflow y consulta de datos via SQL
+- **Visualización:** Matplotlib para EDA en notebooks, Plotly para comparación interactiva entre modelos vs ventas reales
 
 ---
 
