@@ -6,16 +6,29 @@ Pipeline de ML de punta a punta para forecasting de demanda retail — desde los
 
 ## Stack tecnológico
 
-`Python` · `Pandas` · `NumPy` · `Scikit-learn` · `XGBoost` · `TensorFlow` · `Matplotlib` · `Plotly` · `MLflow` · `FastAPI` · `Uvicorn` · `Docker`
+`Python` · `Pandas` · `NumPy`· `SQLite` · `Scikit-learn` · `XGBoost` · `TensorFlow` · `Matplotlib` · `Plotly` · `MLflow` · `FastAPI` · `Uvicorn` · `Docker`
 
 ---
 
 ## ¿Qué hace?
 
-- Entrena un modelo de forecasting de demanda sobre datos históricos de retail (tienda, departamento, fecha)
-- Registra cada experimento (parámetros, métricas, artefactos) con **MLflow**
+- Entrena y compara múltiples modelos de forecasting (XGBoost, TensorFlow) sobre datos históricos de retail (tienda, departamento, fecha)
+- Aplica feature engineering sobre variables temporales y de contexto de negocio
+- Registra cada experimento (parámetros, métricas, artefactos) con **MLflow** para gestión del ciclo de vida del modelo
 - Expone predicciones a través de una API REST con **FastAPI**
 - Orquesta el entrenamiento y la UI de MLflow mediante **Docker Compose**
+
+---
+
+## Decisiones técnicas
+
+- **EDA:** análisis exploratorio sobre el dataset de Walmart para identificar estacionalidad semanal, impacto de feriados y variabilidad por departamento
+- **Feature engineering:** extracción de variables temporales (semana, mes, trimestre), lags de ventas y codificación de tienda/departamento
+- **Modelos evaluados:**  XGBoost como baseline, Prophet para capturar estacionalidad y tendencia, y red neuronal con TensorFlow para patrones no lineales
+- **Métricas de evaluación:** RMSE y MAPE por modelo, registradas automáticamente en MLflow para comparación entre runs
+- **Almacenamiento:**: Base de datos SQLite para persistencia de experimentos MLflow y consulta de datos via SQL
+- **Visualización:** Visualización: Matplotlib para análisis exploratorio en notebooks, Plotly para gráficos interactivos de comparación entre XGBoost, Prophet y TensorFlow vs ventas reales
+
 
 ---
 
