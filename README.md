@@ -6,18 +6,32 @@ End-to-end ML pipeline for retail demand forecasting — from raw data to a prod
 
 ## Tech Stack
 
-`Python` · `Pandas` · `NumPy` · `SQLite` · `PyArrow` · `Scikit-learn` · `XGBoost` · `Prophet` · `TensorFlow` · `Matplotlib` · `Plotly` · `MLflow` · `FastAPI` · `Uvicorn` · `Docker`
+`Python` · `Pandas` · `NumPy` · `SQLite` · `PyArrow` · `Scikit-learn` · `XGBoost` · `Prophet` · `TensorFlow` · `Matplotlib` · `Plotly` · `MLflow` · `Groq` · `FastAPI` · `Uvicorn` · `Docker` · `GCP`
 
 ---
 
 ## What it does
 
-- Trains and compares multiple forecasting models (XGBoost, Prophet, TensorFlow) on historical retail data (store, department, date)
+- Trains and compares multiple forecasting models (XGBoost, Prophet, LSTM) on historical retail data (store, department, date)
 - Implements a local feature store with Parquet for feature persistence and reuse across runs
 - Applies advanced feature engineering on temporal variables, markdowns, lags and cross-series features
 - Tracks every experiment (parameters, metrics, artifacts) with **MLflow** for full model lifecycle management
+- Generates natural language reports from MLflow metrics via **Groq (LLaMA 3.3 70B)**
 - Exposes predictions through a REST API built with **FastAPI**
 - Orchestrates the training job and MLflow UI via **Docker Compose**
+- Artifacts stored in **Google Cloud Storage**, API deployed on **Cloud Run**
+
+---
+
+## Results
+
+| Model | RMSE | MAPE |
+|-------|------|------|
+| LSTM | 1,098.77 | 5.1% |
+| XGBoost | 1,640.57 | 4.0% |
+| Prophet | 2,313.03 | 9.4% |
+
+> LSTM achieves the lowest RMSE while XGBoost leads on MAPE — trade-off between overall error and percentage accuracy tracked via MLflow across all runs.
 
 ---
 
@@ -26,10 +40,12 @@ End-to-end ML pipeline for retail demand forecasting — from raw data to a prod
 - **EDA:** exploratory analysis on the Walmart dataset to identify weekly seasonality, holiday impact and sales variability across departments
 - **Feature store:** local implementation with Parquet (PyArrow) for feature persistence and reuse between runs
 - **Feature engineering:** temporal features (week, month, quarter, year-end), markdowns, sales lags (1, 2, 4, 8, 52 weeks), rolling statistics (mean, std, max) and cross-store/department features
-- **Models evaluated:** XGBoost as baseline, Prophet for seasonality and trend, and a neural network with TensorFlow for non-linear patterns
+- **Models evaluated:** XGBoost as baseline, Prophet for seasonality and trend, and LSTM with TensorFlow for non-linear sequential patterns
 - **Evaluation metrics:** RMSE and MAPE per model, automatically logged in MLflow for cross-run comparison
 - **Storage:** SQLite for MLflow experiment persistence and data querying via SQL
 - **Visualization:** Matplotlib for EDA in notebooks, Plotly for interactive model comparison vs real sales
+- **LLM reporting:** Groq (LLaMA 3.3 70B) to automatically generate natural language reports from MLflow run metrics
+- **Cloud:** artifacts stored in Google Cloud Storage, API deployed on Cloud Run
 
 ---
 
@@ -113,4 +129,10 @@ mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./
 curl -X POST "http://127.0.0.1:8000/predict" \
   -H "Content-Type: application/json" \
   -d '{"store": 1, "dept": 1, "date": "2010-11-26"}'
+```
+
+`GET /report` — generates a natural language summary of the latest MLflow run via Groq
+
+```bash
+curl http://127.0.0.1:8000/report
 ```
