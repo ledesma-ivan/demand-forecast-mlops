@@ -1,67 +1,67 @@
 # Demand Forecast MLOps
 
-End-to-end ML pipeline for retail demand forecasting — from raw data to a production-ready REST API, with full experiment tracking via MLflow.
+Pipeline de ML de punta a punta para forecasting de demanda retail — desde los datos crudos hasta una API REST lista para producción, con tracking completo de experimentos via MLflow.
 
 ---
 
-## Tech Stack
+## Stack tecnológico
 
 `Python` · `Scikit-learn` · `XGBoost` · `Pandas` · `NumPy` · `MLflow` · `FastAPI` · `Uvicorn`
 
 ---
 
-## What it does
+## ¿Qué hace?
 
-- Trains a demand forecasting model on historical retail data (store, department, date)
-- Tracks every experiment (parameters, metrics, artifacts) with **MLflow**
-- Exposes predictions through a **FastAPI** REST API
+- Entrena un modelo de forecasting de demanda sobre datos históricos de retail (tienda, departamento, fecha)
+- Registra cada experimento (parámetros, métricas, artefactos) con **MLflow**
+- Expone predicciones a través de una API REST con **FastAPI**
 
 ---
 
-## Project Structure
+## Estructura del proyecto
 
 ```
-├── data/            # Raw and processed datasets
-├── notebooks/       # EDA and experimentation
-├── src/             # Pipeline and API source code
-│   └── api/         # FastAPI app
-├── models/          # Serialized trained models
-├── mlruns/          # MLflow artifacts
-├── run_pipeline.py  # Entrypoint: train + evaluate + register
+├── data/            # Datasets crudos y procesados
+├── notebooks/       # EDA y experimentación
+├── src/             # Código fuente del pipeline y la API
+│   └── api/         # Aplicación FastAPI
+├── models/          # Modelos entrenados serializados
+├── mlruns/          # Artefactos de MLflow
+├── run_pipeline.py  # Punto de entrada: entrenar, evaluar y registrar
 └── requirements.txt
 ```
 
 ---
 
-## Quickstart
+## Inicio rápido
 
 ```bash
-# 1. Create and activate virtual environment
+# 1. Crear y activar entorno virtual
 python -m venv venv && source venv/bin/activate  # Mac/Linux
 python -m venv venv && venv\Scripts\activate     # Windows
 
-# 2. Install dependencies
+# 2. Instalar dependencias
 pip install -r requirements.txt
 
-# 3. Run the training pipeline
+# 3. Ejecutar el pipeline de entrenamiento
 python run_pipeline.py
 
-# 4. Start the prediction API
+# 4. Levantar la API de predicción
 uvicorn src.api.main:app --reload
 
-# 5. Launch MLflow UI
+# 5. Abrir la interfaz de MLflow
 mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlruns
 ```
 
-| Service | URL |
-|---------|-----|
+| Servicio | URL |
+|----------|-----|
 | API | http://127.0.0.1:8000 |
-| Swagger docs | http://127.0.0.1:8000/docs |
+| Documentación (Swagger) | http://127.0.0.1:8000/docs |
 | MLflow UI | http://127.0.0.1:5000 |
 
 ---
 
-## API Usage
+## Uso de la API
 
 `POST /predict`
 
