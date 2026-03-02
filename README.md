@@ -1,103 +1,103 @@
 # Demand Forecast MLOps
 
-Pipeline de ML de punta a punta para forecasting de demanda retail — desde los datos crudos hasta una API REST lista para producción, con tracking completo de experimentos via MLflow.
+End-to-end ML pipeline for retail demand forecasting — from raw data to a production-ready REST API, with full experiment tracking via MLflow.
 
 ---
 
-## Stack tecnológico
+## Tech Stack
 
 `Python` · `Pandas` · `NumPy` · `SQLite` · `PyArrow` · `Scikit-learn` · `XGBoost` · `Prophet` · `TensorFlow` · `Matplotlib` · `Plotly` · `MLflow` · `FastAPI` · `Uvicorn` · `Docker`
 
 ---
 
-## ¿Qué hace?
+## What it does
 
-- Entrena y compara múltiples modelos de forecasting (XGBoost, Prophet, TensorFlow) sobre datos históricos de retail (tienda, departamento, fecha)
-- Implementa una feature store local con Parquet para persistencia y reutilización de features entre runs
-- Aplica feature engineering avanzado sobre variables temporales, markdowns, lags y series cruzadas
-- Registra cada experimento (parámetros, métricas, artefactos) con **MLflow** para gestión del ciclo de vida del modelo
-- Expone predicciones a través de una API REST con **FastAPI**
-- Orquesta el entrenamiento y la UI de MLflow mediante **Docker Compose**
-
----
-
-## Decisiones técnicas
-
-- **EDA:** análisis exploratorio sobre el dataset de Walmart para identificar estacionalidad semanal, impacto de feriados y variabilidad por departamento
-- **Feature store:** implementación local con Parquet (PyArrow) para persistencia y reutilización de features entre runs
-- **Feature engineering:** variables temporales (semana, mes, trimestre, fin de año), markdowns, lags de ventas (1, 2, 4, 8, 52 semanas), rolling statistics (media, std, máx) y features cruzadas entre tiendas y departamentos
-- **Modelos evaluados:** XGBoost como baseline, Prophet para capturar estacionalidad y tendencia, y red neuronal con TensorFlow para patrones no lineales
-- **Métricas de evaluación:** RMSE y MAPE por modelo, registradas automáticamente en MLflow para comparación entre runs
-- **Almacenamiento:** SQLite para persistencia de experimentos MLflow y consulta de datos via SQL
-- **Visualización:** Matplotlib para EDA en notebooks, Plotly para comparación interactiva entre modelos vs ventas reales
+- Trains and compares multiple forecasting models (XGBoost, Prophet, TensorFlow) on historical retail data (store, department, date)
+- Implements a local feature store with Parquet for feature persistence and reuse across runs
+- Applies advanced feature engineering on temporal variables, markdowns, lags and cross-series features
+- Tracks every experiment (parameters, metrics, artifacts) with **MLflow** for full model lifecycle management
+- Exposes predictions through a REST API built with **FastAPI**
+- Orchestrates the training job and MLflow UI via **Docker Compose**
 
 ---
 
-## Estructura del proyecto
+## Technical Decisions
+
+- **EDA:** exploratory analysis on the Walmart dataset to identify weekly seasonality, holiday impact and sales variability across departments
+- **Feature store:** local implementation with Parquet (PyArrow) for feature persistence and reuse between runs
+- **Feature engineering:** temporal features (week, month, quarter, year-end), markdowns, sales lags (1, 2, 4, 8, 52 weeks), rolling statistics (mean, std, max) and cross-store/department features
+- **Models evaluated:** XGBoost as baseline, Prophet for seasonality and trend, and a neural network with TensorFlow for non-linear patterns
+- **Evaluation metrics:** RMSE and MAPE per model, automatically logged in MLflow for cross-run comparison
+- **Storage:** SQLite for MLflow experiment persistence and data querying via SQL
+- **Visualization:** Matplotlib for EDA in notebooks, Plotly for interactive model comparison vs real sales
+
+---
+
+## Project Structure
 
 ```
-├── data/                # Datasets crudos y procesados
-├── notebooks/           # EDA y experimentación
-├── src/                 # Código fuente del pipeline y la API
-│   └── api/             # Aplicación FastAPI
-├── models/              # Modelos entrenados serializados
-├── mlruns/              # Artefactos de MLflow
-├── Dockerfile           # Imagen base del proyecto
-├── docker-compose.yml   # Orquestación: training job + MLflow UI
-├── run_pipeline.py      # Punto de entrada: entrenar, evaluar y registrar
+├── data/                # Raw and processed datasets
+├── notebooks/           # EDA and experimentation
+├── src/                 # Pipeline and API source code
+│   └── api/             # FastAPI app
+├── models/              # Serialized trained models
+├── mlruns/              # MLflow artifacts
+├── Dockerfile           # Base image
+├── docker-compose.yml   # Orchestration: training job + MLflow UI
+├── run_pipeline.py      # Entrypoint: train, evaluate and register
 └── requirements.txt
 ```
 
 ---
 
-## Inicio rápido
+## Quickstart
 
-### Opción A — Con Docker (recomendado)
+### Option A — With Docker (recommended)
 
 ```bash
-# Levantar MLflow UI + job de entrenamiento
+# Start MLflow UI + training job
 docker compose up --build
 ```
 
-| Servicio | URL |
-|----------|-----|
+| Service | URL |
+|---------|-----|
 | MLflow UI | http://localhost:5000 |
 
-Para correr solo el entrenamiento:
+To run only the training job:
 
 ```bash
 docker compose run training_job
 ```
 
-### Opción B — Local
+### Option B — Local
 
 ```bash
-# 1. Crear y activar entorno virtual
+# 1. Create and activate virtual environment
 python -m venv venv && source venv/bin/activate  # Mac/Linux
 python -m venv venv && venv\Scripts\activate     # Windows
 
-# 2. Instalar dependencias
+# 2. Install dependencies
 pip install -r requirements.txt
 
-# 3. Ejecutar el pipeline de entrenamiento
+# 3. Run the training pipeline
 python run_pipeline.py
 
-# 4. Levantar la API de predicción
+# 4. Start the prediction API
 uvicorn src.api.main:app --reload
 
-# 5. Abrir la interfaz de MLflow
+# 5. Launch MLflow UI
 mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlruns
 ```
 
-| Servicio | URL |
-|----------|-----|
+| Service | URL |
+|---------|-----|
 | API | http://127.0.0.1:8000 |
-| Documentación (Swagger) | http://127.0.0.1:8000/docs |
+| Swagger docs | http://127.0.0.1:8000/docs |
 | MLflow UI | http://127.0.0.1:5000 |
 
 ---
 
-## Uso de la API
+## API Usage
 
 `POST /predict`
 
