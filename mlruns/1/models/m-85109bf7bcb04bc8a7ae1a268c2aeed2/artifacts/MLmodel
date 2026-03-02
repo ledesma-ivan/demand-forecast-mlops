@@ -1,0 +1,52 @@
+artifact_path: file:C:/Users/Ivan/Desktop/demand-forecast-mlops/mlruns/1/models/m-85109bf7bcb04bc8a7ae1a268c2aeed2/artifacts
+flavors:
+  python_function:
+    data: model.ubj
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.xgboost
+    python_version: 3.13.12
+  xgboost:
+    code: null
+    data: model.ubj
+    model_class: xgboost.sklearn.XGBRegressor
+    model_format: ubj
+    xgb_version: 3.2.0
+is_signature_from_type_hint: false
+mlflow_version: 3.10.0
+model_id: m-85109bf7bcb04bc8a7ae1a268c2aeed2
+model_size_bytes: 218761
+model_uuid: m-85109bf7bcb04bc8a7ae1a268c2aeed2
+prompts: null
+run_id: f1f351bb1c194013979ae8be46861d66
+signature:
+  inputs: '[{"type": "integer", "name": "IsHoliday", "required": true}, {"type": "long",
+    "name": "Size", "required": true}, {"type": "double", "name": "Temperature", "required":
+    true}, {"type": "double", "name": "Fuel_Price", "required": true}, {"type": "double",
+    "name": "MarkDown1", "required": true}, {"type": "double", "name": "MarkDown2",
+    "required": true}, {"type": "double", "name": "MarkDown3", "required": true},
+    {"type": "double", "name": "MarkDown4", "required": true}, {"type": "double",
+    "name": "MarkDown5", "required": true}, {"type": "double", "name": "CPI", "required":
+    true}, {"type": "double", "name": "Unemployment", "required": true}, {"type":
+    "integer", "name": "Week", "required": true}, {"type": "integer", "name": "Month",
+    "required": true}, {"type": "integer", "name": "Quarter", "required": true}, {"type":
+    "integer", "name": "Is_Year_End", "required": true}, {"type": "integer", "name":
+    "Active_Markdowns", "required": true}, {"type": "integer", "name": "Type_Num",
+    "required": true}, {"type": "double", "name": "Sales_Lag_1", "required": false},
+    {"type": "double", "name": "Sales_Lag_2", "required": false}, {"type": "double",
+    "name": "Sales_Lag_4", "required": false}, {"type": "double", "name": "Sales_Lag_8",
+    "required": false}, {"type": "double", "name": "Sales_Lag_52", "required": false},
+    {"type": "double", "name": "Rolling_Mean_4", "required": false}, {"type": "double",
+    "name": "Rolling_Std_4", "required": false}, {"type": "double", "name": "Rolling_Max_4",
+    "required": false}, {"type": "double", "name": "Rolling_Mean_8", "required": false},
+    {"type": "double", "name": "Rolling_Std_8", "required": false}, {"type": "double",
+    "name": "Rolling_Max_8", "required": false}, {"type": "double", "name": "Rolling_Mean_12",
+    "required": false}, {"type": "double", "name": "Rolling_Std_12", "required": false},
+    {"type": "double", "name": "Rolling_Max_12", "required": false}, {"type": "double",
+    "name": "Dept_Avg_Sales_All_Stores", "required": true}, {"type": "double", "name":
+    "Store_Rank_In_Dept", "required": true}]'
+  outputs: '[{"type": "tensor", "tensor-spec": {"dtype": "float32", "shape": [-1]}}]'
+  params: null
+type_hint_from_example: false
+utc_time_created: '2026-03-02 23:42:20.590549'

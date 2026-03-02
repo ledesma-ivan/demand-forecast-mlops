@@ -46,6 +46,14 @@ http://127.0.0.1:5000
 
 ---
 
+Paso 2: Levantar el servidor
+Abre una terminal en la raíz de tu proyecto y ejecuta:
+
+
+uvicorn src.api.main:app --reload
+
+
+
 ## Desactivar el entorno virtual
 
 ```bash
