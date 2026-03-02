@@ -6,7 +6,7 @@ Pipeline de ML de punta a punta para forecasting de demanda retail — desde los
 
 ## Stack tecnológico
 
-`Python` · `Scikit-learn` · `XGBoost` · `Pandas` · `NumPy` · `MLflow` · `FastAPI` · `Uvicorn` · `Docker`
+`Python` · `Scikit-learn` · `XGBoost`· `Tensorflow` · `Pandas` · `NumPy` · `MLflow` · `FastAPI` · `Uvicorn` · `Docker`
 
 ---
 
