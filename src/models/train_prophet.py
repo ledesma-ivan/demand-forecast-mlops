@@ -17,4 +17,5 @@ def train_predict_prophet(train, test):
     prophet_time = time.time() - start_time
     
     print("✅ Prophet Listo!")
-    return preds, prophet_time
+    # Retornamos las predicciones, el tiempo y el modelo
+    return preds, prophet_time, modelo

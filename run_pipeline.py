@@ -4,6 +4,8 @@ import time
 import matplotlib.pyplot as plt
 import mlflow
 import mlflow.xgboost
+import mlflow.prophet       # Añadido para Prophet
+import mlflow.tensorflow    # Añadido para LSTM (Keras)
 
 from src.features.build_features import clean_and_merge_data, create_features
 from src.features.feature_store import LocalFeatureStore
@@ -16,8 +18,7 @@ def main():
     print("--- INICIANDO TORNEO DE MODELOS CON MLFLOW ---")
     
     # 1. Configurar MLflow Tracking
-    # Esto creará una carpeta 'mlruns' en tu proyecto para guardar todo localmente
-    mlflow.set_tracking_uri("sqlite:///mlflow.db") # Usamos SQLite para habilitar el Model Registry
+    mlflow.set_tracking_uri("sqlite:///mlflow.db")
     mlflow.set_experiment("Walmart_Demand_Forecasting")
     
     # 2. Feature Store / Engineering
@@ -43,15 +44,12 @@ def main():
     diccionario_predicciones = {}
     
     # ==========================================
-    # ENTRENAMIENTO XGBOOST CON MLFLOW
+    # ENTRENAMIENTO XGBOOST
     # ==========================================
-    print("--- Entrenando XGBoost ---")
-    
-    # Activamos el autologging: guarda hiperparámetros y feature_importance automáticamente
+    print("\n--- Entrenando XGBoost ---")
     mlflow.xgboost.autolog() 
     
     with mlflow.start_run(run_name="XGBoost_Baseline"):
-        # Logueamos información de contexto manualmente
         mlflow.set_tag("Store", "1")
         mlflow.set_tag("Dept", "1")
         mlflow.log_param("Split_Date", "2012-08-01")
@@ -59,29 +57,60 @@ def main():
         preds_xgb, time_xgb, modelo_xgb = train_predict_xgboost(train, test)
         rmse_xgb, mape_xgb = evaluate_model(y_test, preds_xgb)
         
-        # Logueamos nuestras métricas de validación personalizadas
         mlflow.log_metric("val_rmse", rmse_xgb)
         mlflow.log_metric("val_mape", mape_xgb)
         mlflow.log_metric("training_time_seconds", time_xgb)
         
-        # Guardamos el modelo serializado en MLflow (Artifact)
         mlflow.xgboost.log_model(modelo_xgb, artifact_path="xgboost_model")
         
         resultados.append({'Modelo': 'XGBoost', 'RMSE': rmse_xgb, 'MAPE': mape_xgb})
         diccionario_predicciones['XGBoost'] = preds_xgb
 
     # ==========================================
-    # ENTRENAMIENTO PROPHET Y LSTM (Sin MLflow por ahora para simplificar)
+    # ENTRENAMIENTO PROPHET
     # ==========================================
-    preds_prophet, time_prophet = train_predict_prophet(train, test)
-    rmse_prophet, mape_prophet = evaluate_model(y_test, preds_prophet)
-    resultados.append({'Modelo': 'Prophet', 'RMSE': rmse_prophet, 'MAPE': mape_prophet})
-    diccionario_predicciones['Prophet'] = preds_prophet
+    print("\n--- Entrenando Prophet ---")
+    with mlflow.start_run(run_name="Prophet_Baseline"):
+        mlflow.set_tag("Store", "1")
+        mlflow.set_tag("Dept", "1")
+        mlflow.log_param("Split_Date", "2012-08-01")
+        
+        preds_prophet, time_prophet, modelo_prophet = train_predict_prophet(train, test)
+        rmse_prophet, mape_prophet = evaluate_model(y_test, preds_prophet)
+        
+        mlflow.log_metric("val_rmse", rmse_prophet)
+        mlflow.log_metric("val_mape", mape_prophet)
+        mlflow.log_metric("training_time_seconds", time_prophet)
+        
+        # Guardamos el modelo en MLflow
+        mlflow.prophet.log_model(modelo_prophet, artifact_path="prophet_model")
+        
+        resultados.append({'Modelo': 'Prophet', 'RMSE': rmse_prophet, 'MAPE': mape_prophet})
+        diccionario_predicciones['Prophet'] = preds_prophet
     
-    preds_lstm, time_lstm = train_predict_lstm(train, test)
-    rmse_lstm, mape_lstm = evaluate_model(y_test, preds_lstm)
-    resultados.append({'Modelo': 'LSTM', 'RMSE': rmse_lstm, 'MAPE': mape_lstm})
-    diccionario_predicciones['LSTM'] = preds_lstm
+    # ==========================================
+    # ENTRENAMIENTO LSTM
+    # ==========================================
+    print("\n--- Entrenando LSTM ---")
+    mlflow.tensorflow.autolog() # Autologging para Keras/Tensorflow
+    
+    with mlflow.start_run(run_name="LSTM_Baseline"):
+        mlflow.set_tag("Store", "1")
+        mlflow.set_tag("Dept", "1")
+        mlflow.log_param("Split_Date", "2012-08-01")
+        
+        preds_lstm, time_lstm, modelo_lstm = train_predict_lstm(train, test)
+        rmse_lstm, mape_lstm = evaluate_model(y_test, preds_lstm)
+        
+        mlflow.log_metric("val_rmse", rmse_lstm)
+        mlflow.log_metric("val_mape", mape_lstm)
+        mlflow.log_metric("training_time_seconds", time_lstm)
+        
+        # Guardamos el modelo en MLflow
+        mlflow.tensorflow.log_model(modelo_lstm, artifact_path="lstm_model")
+        
+        resultados.append({'Modelo': 'LSTM', 'RMSE': rmse_lstm, 'MAPE': mape_lstm})
+        diccionario_predicciones['LSTM'] = preds_lstm
 
     # 4. Tabla Comparativa Final
     df_resultados = pd.DataFrame(resultados).set_index('Modelo')
@@ -90,7 +119,7 @@ def main():
     
     # 5. Mostrar el gráfico
     plot_model_comparison(test['Date'], y_test, diccionario_predicciones, "Batalla de Modelos: Tienda 1, Dept 1")
-    print("✅ Pipeline ejecutado. Abre MLflow UI para ver los resultados.")
+    print("\n✅ Pipeline ejecutado. Abre MLflow UI para ver los resultados.")
 
 if __name__ == "__main__":
     main()

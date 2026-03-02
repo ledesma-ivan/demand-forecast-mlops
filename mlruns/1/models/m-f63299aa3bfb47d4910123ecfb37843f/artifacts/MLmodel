@@ -1,0 +1,21 @@
+artifact_path: file:C:/Users/Ivan/Desktop/demand-forecast-mlops/mlruns/1/models/m-f63299aa3bfb47d4910123ecfb37843f/artifacts
+flavors:
+  prophet:
+    code: null
+    data: model.pr
+    model_type: Prophet
+    prophet_version: 1.3.0
+  python_function:
+    data: model.pr
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.prophet
+    python_version: 3.13.12
+mlflow_version: 3.10.0
+model_id: m-f63299aa3bfb47d4910123ecfb37843f
+model_size_bytes: 33769
+model_uuid: m-f63299aa3bfb47d4910123ecfb37843f
+prompts: null
+run_id: 1f6e156daad34b7495eecae1948a3167
+utc_time_created: '2026-03-02 17:01:25.458191'

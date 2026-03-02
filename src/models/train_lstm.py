@@ -36,4 +36,5 @@ def train_predict_lstm(train, test):
     lstm_time = time.time() - start_time
 
     print("✅ LSTM Listo!")
-    return preds, lstm_time
+    # Retornamos las predicciones, el tiempo y el modelo
+    return preds, lstm_time, modelo
