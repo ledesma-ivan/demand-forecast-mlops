@@ -1,63 +1,80 @@
-## Crear entorno virtual
+# Demand Forecast MLOps
 
-### Windows
+End-to-end ML pipeline for retail demand forecasting — from raw data to a production-ready REST API, with full experiment tracking via MLflow.
 
-```bash
-python -m venv venv
-venv\Scripts\activate
+---
+
+## Tech Stack
+
+`Python` · `Scikit-learn` · `XGBoost` · `Pandas` · `NumPy` · `MLflow` · `FastAPI` · `Uvicorn`
+
+---
+
+## What it does
+
+- Trains a demand forecasting model on historical retail data (store, department, date)
+- Tracks every experiment (parameters, metrics, artifacts) with **MLflow**
+- Exposes predictions through a **FastAPI** REST API
+
+---
+
+## Project Structure
+
 ```
-
-### Mac / Linux
-
-```bash
-python3 -m venv venv
-source venv/bin/activate
+├── data/            # Raw and processed datasets
+├── notebooks/       # EDA and experimentation
+├── src/             # Pipeline and API source code
+│   └── api/         # FastAPI app
+├── models/          # Serialized trained models
+├── mlruns/          # MLflow artifacts
+├── run_pipeline.py  # Entrypoint: train + evaluate + register
+└── requirements.txt
 ```
 
 ---
 
-## Instalar dependencias
+## Quickstart
 
 ```bash
+# 1. Create and activate virtual environment
+python -m venv venv && source venv/bin/activate  # Mac/Linux
+python -m venv venv && venv\Scripts\activate     # Windows
+
+# 2. Install dependencies
 pip install -r requirements.txt
-```
 
----
-
-## Ejecutar el pipeline
-
-```bash
+# 3. Run the training pipeline
 python run_pipeline.py
-```
 
----
+# 4. Start the prediction API
+uvicorn src.api.main:app --reload
 
-## Levantar la interfaz gráfica de MLflow
-
-```bash
+# 5. Launch MLflow UI
 mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlruns
 ```
 
-Luego abre en tu navegador:
-
-```
-http://127.0.0.1:5000
-```
+| Service | URL |
+|---------|-----|
+| API | http://127.0.0.1:8000 |
+| Swagger docs | http://127.0.0.1:8000/docs |
+| MLflow UI | http://127.0.0.1:5000 |
 
 ---
 
-Paso 2: Levantar el servidor
-Abre una terminal en la raíz de tu proyecto y ejecuta:
+## API Usage
 
+`POST /predict`
 
-uvicorn src.api.main:app --reload
-
-
-
-## Desactivar el entorno virtual
+```json
+{
+  "store": 1,
+  "dept": 1,
+  "date": "2010-11-26"
+}
+```
 
 ```bash
-deactivate
+curl -X POST "http://127.0.0.1:8000/predict" \
+  -H "Content-Type: application/json" \
+  -d '{"store": 1, "dept": 1, "date": "2010-11-26"}'
 ```
-
----
