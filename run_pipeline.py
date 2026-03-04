@@ -6,6 +6,7 @@ import mlflow
 import mlflow.xgboost
 import mlflow.prophet       # Añadido para Prophet
 import mlflow.tensorflow    # Añadido para LSTM (Keras)
+import google.generativeai as genai # Añadido para Gemini
 
 from src.features.build_features import clean_and_merge_data, create_features
 from src.features.feature_store import LocalFeatureStore
@@ -121,11 +122,50 @@ def main():
     # 4. Tabla Comparativa Final
     df_resultados = pd.DataFrame(resultados).set_index('Modelo')
     print("\n=== TABLA COMPARATIVA DE MODELOS ===")
-    print(df_resultados.sort_values('RMSE'))
+    df_ordenado = df_resultados.sort_values('RMSE')
+    print(df_ordenado)
+
+    # ==========================================
+    # 5. REPORTE EJECUTIVO CON GEMINI AI
+    # ==========================================
+    print("\n--- Generando Reporte Ejecutivo con Gemini ---")
+    gemini_key = os.getenv("GEMINI_API_KEY")
     
-    # 5. Mostrar el gráfico
+    if gemini_key:
+        genai.configure(api_key=gemini_key)
+        # Usamos el modelo flash porque es rapidísimo y excelente para texto
+        modelo_llm = genai.GenerativeModel('gemini-1.5-flash')
+        
+        # Convertimos la tabla a texto plano para que el LLM la entienda
+        tabla_texto = df_ordenado.to_string()
+        
+        prompt = f"""
+        Eres un Data Scientist Senior en Walmart. Acabas de entrenar 3 modelos 
+        (XGBoost, Prophet y LSTM) para predecir las ventas semanales de la Tienda 1, Departamento 1.
+        
+        Aquí están los resultados ordenados del mejor al peor:
+        {tabla_texto}
+        
+        Escribe un breve reporte ejecutivo (2 párrafos máximo) dirigido al Gerente de la Tienda.
+        1. Indica claramente qué modelo ganó y por qué.
+        2. Explica qué significa el error MAPE del modelo ganador en términos de negocio (ej. "nuestras predicciones tienen un margen de error del X%").
+        3. Mantén un tono profesional, claro y sin lenguaje excesivamente técnico.
+        """
+        
+        try:
+            respuesta = modelo_llm.generate_content(prompt)
+            print("\n" + "="*50)
+            print("🤖 REPORTE AUTOMÁTICO DE GEMINI AI 🤖")
+            print("="*50)
+            print(respuesta.text)
+            print("="*50 + "\n")
+        except Exception as e:
+            print(f"❌ Error al conectar con Gemini: {e}")
+    else:
+        print("⚠️ No se encontró GEMINI_API_KEY en Docker. Saltando reporte.")
+
+    # 6. Mostrar el gráfico (tu código actual)
     plot_model_comparison(test['Date'], y_test, diccionario_predicciones, "Batalla de Modelos: Tienda 1, Dept 1")
     print("\n✅ Pipeline ejecutado. Abre MLflow UI para ver los resultados.")
-
 if __name__ == "__main__":
     main()
