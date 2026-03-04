@@ -26,7 +26,7 @@ services:
     environment:
       # <--- CAMBIO 2: Usar http://mlflow_ui:5000 (nombre del servicio de arriba)
       - MLFLOW_TRACKING_URI=http://127.0.0.1:5000
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_API_KEY='TODO: PONER TU API KEY DE GEMINI AQUÍ'
     volumes:
       - ./data:/app/data
       - ./src:/app/src
