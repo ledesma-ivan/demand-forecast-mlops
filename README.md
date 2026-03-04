@@ -6,8 +6,7 @@ End-to-end ML pipeline for retail demand forecasting — from raw data to a prod
 
 ## Tech Stack
 
-`Python` · `Pandas` · `NumPy` · `SQLite` · `PyArrow` · `Scikit-learn` · `XGBoost` · `Prophet` · `TensorFlow` · `Matplotlib` · `Plotly` · `MLflow` · `Gemini AI` · `FastAPI` · `Uvicorn` · `Docker` · `AWS`
-
+`Python` · `Pandas` · `NumPy` · `SQLite` · `PyArrow` · `Scikit-learn` · `XGBoost` · `Prophet` · `TensorFlow` · `Matplotlib` · `Plotly` · `MLflow` · `Gemini AI` · `FastAPI` · `Uvicorn` · `Docker`
 ---
 
 ## What it does
@@ -19,8 +18,6 @@ End-to-end ML pipeline for retail demand forecasting — from raw data to a prod
 - Generates natural language reports from MLflow metrics via **Gemini AI (gemini-3.1-flash-lite-preview)**
 - Exposes predictions through a REST API built with **FastAPI**
 - Orchestrates the training job and MLflow UI via **Docker Compose**
-- Artifacts stored in **AWS S3**, API deployed on **AWS App Runner**
-
 ---
 
 ## Results
@@ -45,8 +42,6 @@ End-to-end ML pipeline for retail demand forecasting — from raw data to a prod
 - **Storage:** SQLite for MLflow experiment persistence and data querying via SQL
 - **Visualization:** Matplotlib for EDA in notebooks, Plotly for interactive model comparison vs real sales
 - **LLM reporting:** Gemini AI (gemini-3.1-flash-lite-preview) to automatically generate natural language reports from MLflow run metrics
-- **Cloud:** artifacts stored in AWS S3, API deployed on App Runner
-
 
 
 ---
@@ -133,7 +128,7 @@ curl -X POST "http://127.0.0.1:8000/predict" \
   -d '{"store": 1, "dept": 1, "date": "2010-11-26"}'
 ```
 
-`GET /report` — generates a natural language summary of the latest MLflow run via Groq
+`GET /report` — generates a natural language summary of the latest MLflow run via Geminis
 
 ```bash
 curl http://127.0.0.1:8000/report
