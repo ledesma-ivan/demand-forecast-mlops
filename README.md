@@ -6,7 +6,7 @@ End-to-end ML pipeline for retail demand forecasting — from raw data to a prod
 
 ## Tech Stack
 
-`Python` · `Pandas` · `NumPy` · `SQLite` · `PyArrow` · `Scikit-learn` · `XGBoost` · `Prophet` · `TensorFlow` · `Matplotlib` · `Plotly` · `MLflow` · `Gemini AI` · `FastAPI` · `Uvicorn` · `Docker`·
+`Python` · `Pandas` · `NumPy` · `SQLite` · `PyArrow` · `Scikit-learn` · `XGBoost` · `Prophet` · `TensorFlow` · `Matplotlib` · `Plotly` · `MLflow` · `Gemini AI` · `FastAPI` · `Uvicorn` · `Docker`
 ---
 
 ## What it does
