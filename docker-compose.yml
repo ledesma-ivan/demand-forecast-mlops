@@ -8,7 +8,7 @@ services:
     ports:
       - "5000:5000"
     command: >
-      mlflow server   # <--- CAMBIO 1: Usar 'server' en vez de 'ui'
+      mlflow server  
       --backend-store-uri sqlite:////app/mlflow_data/mlflow.db
       --default-artifact-root /app/mlruns
       --host 0.0.0.0
@@ -21,6 +21,7 @@ services:
   training_job:
     build: .
     container_name: walmart_training_job
+    network_mode: "service:mlflow_ui
     command: python run_pipeline.py
     environment:
       # <--- CAMBIO 2: Usar http://mlflow_ui:5000 (nombre del servicio de arriba)
