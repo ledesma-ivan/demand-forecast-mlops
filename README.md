@@ -128,7 +128,7 @@ curl -X POST "http://127.0.0.1:8000/predict" \
   -d '{"store": 1, "dept": 1, "date": "2010-11-26"}'
 ```
 
-`GET /report` — generates a natural language summary of the latest MLflow run via Geminis
+`GET /report` — generates a natural language summary of the latest MLflow run via Gemini AI
 
 ```bash
 curl http://127.0.0.1:8000/report
