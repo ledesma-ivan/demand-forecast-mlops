@@ -17,8 +17,14 @@ from src.models.train_lstm import train_predict_lstm
 def main():
     print("--- INICIANDO TORNEO DE MODELOS CON MLFLOW ---")
     
+    # NUEVO: Esperar 10 segundos para que el servidor de MLflow inicie en Docker
+    print("Esperando 10 segundos a que el servidor MLflow esté listo...")
+    time.sleep(10)
+
     # 1. Configurar MLflow Tracking
-    mlflow.set_tracking_uri("sqlite:///mlflow.db")
+    tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
+    mlflow.set_tracking_uri(tracking_uri)
+    
     mlflow.set_experiment("Walmart_Demand_Forecasting")
     
     # 2. Feature Store / Engineering
