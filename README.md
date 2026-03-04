@@ -6,7 +6,7 @@ End-to-end ML pipeline for retail demand forecasting — from raw data to a prod
 
 ## Tech Stack
 
-`Python` · `Pandas` · `NumPy` · `SQLite` · `PyArrow` · `Scikit-learn` · `XGBoost` · `Prophet` · `TensorFlow` · `Matplotlib` · `Plotly` · `MLflow` · `Groq` · `FastAPI` · `Uvicorn` · `Docker` · `AWS`
+`Python` · `Pandas` · `NumPy` · `SQLite` · `PyArrow` · `Scikit-learn` · `XGBoost` · `Prophet` · `TensorFlow` · `Matplotlib` · `Plotly` · `MLflow` · `Gemini AI` · `FastAPI` · `Uvicorn` · `Docker` · `AWS`
 
 ---
 
@@ -16,7 +16,7 @@ End-to-end ML pipeline for retail demand forecasting — from raw data to a prod
 - Implements a local feature store with Parquet for feature persistence and reuse across runs
 - Applies advanced feature engineering on temporal variables, markdowns, lags and cross-series features
 - Tracks every experiment (parameters, metrics, artifacts) with **MLflow** for full model lifecycle management
-- Generates natural language reports from MLflow metrics via **Groq (LLaMA 3.3 70B)**
+- Generates natural language reports from MLflow metrics via **Gemini AI (gemini-3.1-flash-lite-preview)**
 - Exposes predictions through a REST API built with **FastAPI**
 - Orchestrates the training job and MLflow UI via **Docker Compose**
 - Artifacts stored in **AWS S3**, API deployed on **AWS App Runner**
@@ -44,7 +44,7 @@ End-to-end ML pipeline for retail demand forecasting — from raw data to a prod
 - **Evaluation metrics:** RMSE and MAPE per model, automatically logged in MLflow for cross-run comparison
 - **Storage:** SQLite for MLflow experiment persistence and data querying via SQL
 - **Visualization:** Matplotlib for EDA in notebooks, Plotly for interactive model comparison vs real sales
-- **LLM reporting:** Groq (LLaMA 3.3 70B) to automatically generate natural language reports from MLflow run metrics
+- **LLM reporting:** Gemini AI (gemini-3.1-flash-lite-preview) to automatically generate natural language reports from MLflow run metrics
 - **Cloud:** artifacts stored in AWS S3, API deployed on App Runner
 
 

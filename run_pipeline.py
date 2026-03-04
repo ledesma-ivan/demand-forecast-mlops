@@ -134,7 +134,7 @@ def main():
     if gemini_key:
         genai.configure(api_key=gemini_key)
         # Usamos el modelo flash porque es rapidísimo y excelente para texto
-        modelo_llm = genai.GenerativeModel('gemini-2.5-flash')
+        modelo_llm = genai.GenerativeModel('gemini-3.1-pro-preview')
         
         # Convertimos la tabla a texto plano para que el LLM la entienda
         tabla_texto = df_ordenado.to_string()
