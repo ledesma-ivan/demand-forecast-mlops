@@ -9,3 +9,7 @@ exclude =[".git", "__pycache__", "notebooks", "data"]
 # F: Errores lógicos (variables no usadas, imports rotos)
 # I: Ordenamiento automático de imports (isort)
 select = ["E", "F", "I"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."] # Permite que los tests importen tu carpeta src/
