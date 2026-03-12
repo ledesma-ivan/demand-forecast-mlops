@@ -16,3 +16,9 @@ google-generativeai
 pydantic
 plotly
 gunicorn
+
+# Herramientas de desarrollo y calidad de código
+ruff>=0.4
+pre-commit>=3.7
+pytest>=7.0
+pytest-cov>=4.0
