@@ -1,17 +1,15 @@
-# Usamos una imagen oficial de Python
+# 1. Imagen base
 FROM python:3.10-slim
 
-# Instalamos dependencias del sistema necesarias para compilar Prophet, Pandas y C++ extensions
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    curl \
+# 2. Instalar dependencias del sistema operativo (necesario para XGBoost)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Establecemos el directorio de trabajo
-WORKDIR /app
-
-# Copiamos el requirements y lo instalamos
+# 3. Copiar requirements
 COPY requirements.txt .
+
+# 4. Instalar librerías de Python
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
