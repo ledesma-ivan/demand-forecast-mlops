@@ -1,7 +1,6 @@
 import numpy as np
-import pandas as pd
-from sklearn.metrics import mean_squared_error, mean_absolute_percentage_error
 import plotly.graph_objects as go
+from sklearn.metrics import mean_absolute_percentage_error, mean_squared_error
 
 
 def evaluate_model(y_true, y_pred):
@@ -11,31 +10,37 @@ def evaluate_model(y_true, y_pred):
     return rmse, mape
 
 
-def plot_model_comparison(dates, y_true, preds_dict, title="Comparación de Predicciones"):
+def plot_model_comparison(
+    dates, y_true, preds_dict, title="Comparación de Predicciones"
+):
     """Dibuja el gráfico comparativo final con Plotly."""
     fig = go.Figure()
 
     # Ventas reales
-    fig.add_trace(go.Scatter(
-        x=dates,
-        y=y_true.values,
-        name="Ventas Reales",
-        line=dict(color="black", width=2),
-        mode="lines+markers"
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=dates,
+            y=y_true.values,
+            name="Ventas Reales",
+            line=dict(color="black", width=2),
+            mode="lines+markers",
+        )
+    )
 
     # Predicciones por modelo
     styles = ["dash", "dashdot", "dot"]
     colors = ["#636EFA", "#EF553B", "#00CC96"]
 
     for (name, preds), style, color in zip(preds_dict.items(), styles, colors):
-        fig.add_trace(go.Scatter(
-            x=dates,
-            y=preds,
-            name=name,
-            line=dict(dash=style, color=color),
-            mode="lines"
-        ))
+        fig.add_trace(
+            go.Scatter(
+                x=dates,
+                y=preds,
+                name=name,
+                line=dict(dash=style, color=color),
+                mode="lines",
+            )
+        )
 
     fig.update_layout(
         title=title,
@@ -45,7 +50,7 @@ def plot_model_comparison(dates, y_true, preds_dict, title="Comparación de Pred
         hovermode="x unified",
         template="plotly_white",
         width=1000,
-        height=500
+        height=500,
     )
 
     fig.show()

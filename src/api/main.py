@@ -1,10 +1,12 @@
-import pandas as pd
-import numpy as np  # <-- ¡FALTABA ESTO!
+from contextlib import asynccontextmanager
 from datetime import datetime
+
+import mlflow.pyfunc
+import numpy as np  # <-- ¡FALTABA ESTO!
+import pandas as pd
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from contextlib import asynccontextmanager
-import mlflow.pyfunc
+
 from src.features.feature_store import LocalFeatureStore
 
 # ==========================================
@@ -17,11 +19,8 @@ ARTIFACT_PATH = "xgboost_model"
 MODEL = None
 DF_FEATURES = None  # <-- Declarar aquí para evitar errores
 
-MODEL_INFO = {
-    "run_id": RUN_ID,
-    "artifact_path": ARTIFACT_PATH,
-    "loaded_at": None
-}
+MODEL_INFO = {"run_id": RUN_ID, "artifact_path": ARTIFACT_PATH, "loaded_at": None}
+
 
 # ==========================================
 # 1. CARGA DE MODELO Y DATOS (Al arrancar)
@@ -43,19 +42,23 @@ async def lifespan(app: FastAPI):
     # --- B) CARGAR DATOS REALES (Feature Store) ---
     try:
         # Asegúrate de que la ruta base coincida con tu proyecto
-        fs = LocalFeatureStore(base_dir='data/processed/walmart_features')
-        DF_FEATURES = fs.load_features('master_features_v2')
-        
+        fs = LocalFeatureStore(base_dir="data/processed/walmart_features")
+        DF_FEATURES = fs.load_features("master_features_v2")
+
         # Convertimos la columna Date a string para facilitar la búsqueda
-        DF_FEATURES['Date'] = pd.to_datetime(DF_FEATURES['Date']).dt.strftime('%Y-%m-%d')
+        DF_FEATURES["Date"] = pd.to_datetime(DF_FEATURES["Date"]).dt.strftime(
+            "%Y-%m-%d"
+        )
         print(f"✅ Feature Store cargado: {len(DF_FEATURES)} registros disponibles.")
     except Exception as e:
         print(f"❌ Error al cargar Feature Store: {e}")
-        
+
     yield
     print("🛑 Apagando API...")
 
+
 app = FastAPI(title="Walmart Forecast API (Datos Reales)", lifespan=lifespan)
+
 
 # ==========================================
 # 2. ESQUEMAS DE PETICIÓN
@@ -65,37 +68,44 @@ class PredictRequest(BaseModel):
     dept: int
     date: str  # Formato YYYY-MM-DD
 
+
 # ==========================================
 # 3. ENDPOINTS
 # ==========================================
 @app.post("/predict")
 def predict_sales(request: PredictRequest):
     if MODEL is None or DF_FEATURES is None:
-        raise HTTPException(status_code=503, detail="Servicio no disponible temporalmente.")
+        raise HTTPException(
+            status_code=503, detail="Servicio no disponible temporalmente."
+        )
 
     try:
         # 1. Validar fecha
         try:
             datetime.strptime(request.date, "%Y-%m-%d")
         except ValueError:
-            raise HTTPException(status_code=400, detail="Formato de fecha inválido. Usa YYYY-MM-DD.")
+            raise HTTPException(
+                status_code=400, detail="Formato de fecha inválido. Usa YYYY-MM-DD."
+            )
 
         # 2. BUSCAR LOS DATOS REALES en el DataFrame cargado
-        filtro = (DF_FEATURES['Store'] == request.store) & \
-                 (DF_FEATURES['Dept'] == request.dept) & \
-                 (DF_FEATURES['Date'] == request.date)
-                 
+        filtro = (
+            (DF_FEATURES["Store"] == request.store)
+            & (DF_FEATURES["Dept"] == request.dept)
+            & (DF_FEATURES["Date"] == request.date)
+        )
+
         fila_real = DF_FEATURES[filtro].copy()
 
         # Si no hay datos para esa combinación, devolvemos un error 404
         if fila_real.empty:
             raise HTTPException(
-                status_code=404, 
-                detail=f"No se encontraron features para Store {request.store}, Dept {request.dept} en {request.date}."
+                status_code=404,
+                detail=f"No se encontraron features para Store {request.store}, Dept {request.dept} en {request.date}.",
             )
 
         # 3. PREPARAR LA FILA PARA EL MODELO
-        columnas_a_quitar = ['Date', 'Weekly_Sales', 'Store', 'Dept']
+        columnas_a_quitar = ["Date", "Weekly_Sales", "Store", "Dept"]
         for col in columnas_a_quitar:
             if col in fila_real.columns:
                 fila_real = fila_real.drop(columns=[col])
@@ -106,7 +116,7 @@ def predict_sales(request: PredictRequest):
                 fila_real[col] = fila_real[col].astype(int)
 
         # Quitar cualquier otra columna de texto sobrante
-        columnas_texto = fila_real.select_dtypes(include=['object']).columns
+        columnas_texto = fila_real.select_dtypes(include=["object"]).columns
         if len(columnas_texto) > 0:
             fila_real = fila_real.drop(columns=columnas_texto)
 
@@ -115,10 +125,10 @@ def predict_sales(request: PredictRequest):
         # =========================================================
         # 🚨 AQUÍ IMPRIMIMOS LAS COLUMNAS ANTES DE QUE FALLE
         # =========================================================
-        print("\n" + "="*50)
+        print("\n" + "=" * 50)
         print(f"📊 CANTIDAD DE COLUMNAS ACTUALES: {len(fila_real.columns)}")
         print(f"📋 LISTA DE COLUMNAS: {fila_real.columns.tolist()}")
-        
+
         # --- MAGIA DE MLFLOW: ALINEAR COLUMNAS EXACTAS ---
         if MODEL.metadata.signature is not None:
             expected_cols = [col.name for col in MODEL.metadata.signature.inputs]
@@ -126,17 +136,17 @@ def predict_sales(request: PredictRequest):
             # Si el modelo guardó qué columnas esperaba, filtramos la fila para que encaje
             fila_real = fila_real[expected_cols]
 
-        print("="*50 + "\n")
+        print("=" * 50 + "\n")
 
         # 4. PREDECIR
         prediction = MODEL.predict(fila_real)
         predicted_value = float(np.squeeze(prediction))
-        
+
         return {
             "store": request.store,
             "dept": request.dept,
             "date": request.date,
-            "predicted_weekly_sales": round(predicted_value, 2)
+            "predicted_weekly_sales": round(predicted_value, 2),
         }
 
     except HTTPException:
