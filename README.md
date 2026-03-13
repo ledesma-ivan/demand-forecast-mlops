@@ -6,7 +6,7 @@ End-to-end ML pipeline for retail demand forecasting — from raw data to a prod
 
 **Tech Stack**
 
-`Python` · `Pandas` · `NumPy` · `SQLite` · `PyArrow` · `Scikit-learn` · `XGBoost` · `Prophet` · `TensorFlow` · `Matplotlib` · `Plotly` · `MLflow` · `Gemini AI` · `FastAPI` · `Uvicorn` · `Docker`
+`Python` · `Pandas` · `NumPy` · `PyArrow` · `SQLite` · `Scikit-learn` · `XGBoost` · `Prophet` · `TensorFlow` · `Matplotlib` · `Plotly` · `DVC` · `MLflow` · `Gemini AI` · `FastAPI` · `Uvicorn` · `Docker` · `Pytest` · `GitHub Actions (CI/CD)`
 
 ---
 
@@ -87,8 +87,12 @@ docker compose run training_job
 
 ```bash
 # 1. Create and activate virtual environment
-python -m venv venv && source venv/bin/activate  # Mac/Linux
-python -m venv venv && venv\Scripts\activate     # Windows
+python3.11 -m venv venv && source venv/bin/activate  # Mac/Linux
+python3.11 -m venv venv && venv\Scripts\activate     # Windows
+
+# Activarlo
+source venv/bin/activate
+
 
 # 2. Install dependencies
 pip install -r requirements.txt
