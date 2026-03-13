@@ -1,0 +1,17 @@
+# Python virtual environments
+venv/
+env/
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Jupyter
+.ipynb_checkpoints/
+
+# MLflow artifacts
+mlruns/
+
+# OS
+.DS_Store
