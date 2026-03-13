@@ -22,7 +22,7 @@ jobs:
     - name: 🐍 Configurar Python
       uses: actions/setup-python@v5
       with:
-        python-version: "3.10" # Ajusta si usas 3.9 o 3.11
+        python-version: "3.11" # Ajusta si usas 3.9 o 3.11
         cache: 'pip'           # Acelera la instalación cacheando paquetes
 
     - name: 📦 Instalar dependencias
