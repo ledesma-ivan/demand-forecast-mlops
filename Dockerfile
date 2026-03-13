@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # 3. Copiar requirements
 COPY requirements.txt .
+COPY requirements/ ./requirements/
 
 # 4. Instalar librerías de Python
 RUN pip install --no-cache-dir --upgrade pip && \
