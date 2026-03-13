@@ -1,0 +1,9 @@
+-r ml.txt
+-r api.txt
+-r viz.txt
+-r genai.txt
+
+ruff>=0.4.0
+pre-commit>=3.7.0
+pytest>=7.0.0
+pytest-cov>=4.0.0
