@@ -3,9 +3,10 @@ name: MLOps CI Pipeline
 # 1. ¿Cuándo se ejecuta esto?
 on:
   push:
-    branches:[ "main" ]
-  pull_request:
     branches: [ "main" ]
+  pull_request:
+    branches:[ "main" ]
+  workflow_dispatch: # <-- Esto agrega el botón para correrlo manual
 
 jobs:
   # -------------------------------------------------------------
