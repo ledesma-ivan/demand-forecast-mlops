@@ -1,6 +1,6 @@
 [tool.ruff]
-# Longitud máxima de línea (88 es el estándar de Black)
-line-length = 88
+# Longitud máxima de línea (100 es el estándar de Black)
+line-length = 100
 # Ignorar la carpeta de notebooks para que no te arroje errores por código en celdas
 exclude =[".git", "__pycache__", "notebooks", "data"]
 

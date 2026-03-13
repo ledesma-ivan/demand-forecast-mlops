@@ -23,12 +23,8 @@ def train_predict_lstm(train, test):
     X_test_scaled = scaler_x.transform(X_test_lstm)
     y_train_scaled = scaler_y.fit_transform(y_train.values.reshape(-1, 1))
 
-    X_train_3d = X_train_scaled.reshape(
-        (X_train_scaled.shape[0], 1, X_train_scaled.shape[1])
-    )
-    X_test_3d = X_test_scaled.reshape(
-        (X_test_scaled.shape[0], 1, X_test_scaled.shape[1])
-    )
+    X_train_3d = X_train_scaled.reshape((X_train_scaled.shape[0], 1, X_train_scaled.shape[1]))
+    X_test_3d = X_test_scaled.reshape((X_test_scaled.shape[0], 1, X_test_scaled.shape[1]))
 
     modelo = Sequential()
     modelo.add(

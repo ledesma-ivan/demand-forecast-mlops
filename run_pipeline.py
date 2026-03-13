@@ -36,7 +36,7 @@ def main():
     except FileNotFoundError:
         print("Calculando features desde cero...")
         train_df = pd.read_csv("data/train.csv")
-        test_df = pd.read_csv("data/test.csv")
+        test_df = pd.read_csv("data/test.csv")  # noqa: F841
         features_df = pd.read_csv("data/features.csv")
         stores_df = pd.read_csv("data/stores.csv")
 
@@ -45,9 +45,7 @@ def main():
         fs.save_features(df_model, "master_features_v2")
 
     # 3. Separación de datos
-    train, test = temporal_train_test_split(
-        df_model, split_date="2012-08-01", store=1, dept=1
-    )
+    train, test = temporal_train_test_split(df_model, split_date="2012-08-01", store=1, dept=1)  # noqa: E501
     y_test = test["Weekly_Sales"]
 
     resultados = []
@@ -93,11 +91,9 @@ def main():
         mlflow.log_metric("training_time_seconds", time_prophet)
 
         # Guardamos el modelo en MLflow
-        mlflow.prophet.log_model(modelo_prophet, artifact_path="prophet_model")
+        mlflow.prophet.log_model(modelo_prophet, artifact_path="prophet_model")  # noqa: E501
 
-        resultados.append(
-            {"Modelo": "Prophet", "RMSE": rmse_prophet, "MAPE": mape_prophet}
-        )
+        resultados.append({"Modelo": "Prophet", "RMSE": rmse_prophet, "MAPE": mape_prophet})
         diccionario_predicciones["Prophet"] = preds_prophet
 
     # ==========================================
@@ -145,16 +141,18 @@ def main():
         tabla_texto = df_ordenado.to_string()
 
         prompt = f"""
-        Eres un Data Scientist Senior en Walmart. Acabas de entrenar 3 modelos 
-        (XGBoost, Prophet y LSTM) para predecir las ventas semanales de la Tienda 1, Departamento 1.
-        
+        Eres un Data Scientist Senior en Walmart. Acabas de entrenar 3 modelos
+        (XGBoost, Prophet y LSTM) para predecir las ventas semanales de la
+        Tienda 1, Departamento 1.
+
         Aquí están los resultados ordenados del mejor al peor:
         {tabla_texto}
-        
-        Escribe un breve reporte ejecutivo (2 párrafos máximo) dirigido al Gerente de la Tienda.
+
+        Escribe un breve reporte ejecutivo (2 párrafos máximo) al Gerente.
         1. Indica claramente qué modelo ganó y por qué.
-        2. Explica qué significa el error MAPE del modelo ganador en términos de negocio (ej. "nuestras predicciones tienen un margen de error del X%").
-        3. Mantén un tono profesional, claro y sin lenguaje excesivamente técnico.
+        2. Explica qué significa el error MAPE del modelo ganador en términos de
+           negocio (ej. "nuestras predicciones tienen un error del X%").
+        3. Mantén un tono profesional, claro y sin lenguaje muy técnico.
         """
 
         try:
@@ -175,7 +173,7 @@ def main():
         y_test,
         diccionario_predicciones,
         "Batalla de Modelos: Tienda 1, Dept 1",
-    )
+    )  # noqa: E501
     print("\n✅ Pipeline ejecutado. Abre MLflow UI para ver los resultados.")
 
 

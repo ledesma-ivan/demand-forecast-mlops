@@ -10,9 +10,7 @@ def evaluate_model(y_true, y_pred):
     return rmse, mape
 
 
-def plot_model_comparison(
-    dates, y_true, preds_dict, title="Comparación de Predicciones"
-):
+def plot_model_comparison(dates, y_true, preds_dict, title="Comparación de Predicciones"):
     """Dibuja el gráfico comparativo final con Plotly."""
     fig = go.Figure()
 

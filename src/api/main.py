@@ -46,9 +46,7 @@ async def lifespan(app: FastAPI):
         DF_FEATURES = fs.load_features("master_features_v2")
 
         # Convertimos la columna Date a string para facilitar la búsqueda
-        DF_FEATURES["Date"] = pd.to_datetime(DF_FEATURES["Date"]).dt.strftime(
-            "%Y-%m-%d"
-        )
+        DF_FEATURES["Date"] = pd.to_datetime(DF_FEATURES["Date"]).dt.strftime("%Y-%m-%d")
         print(f"✅ Feature Store cargado: {len(DF_FEATURES)} registros disponibles.")
     except Exception as e:
         print(f"❌ Error al cargar Feature Store: {e}")
@@ -75,9 +73,7 @@ class PredictRequest(BaseModel):
 @app.post("/predict")
 def predict_sales(request: PredictRequest):
     if MODEL is None or DF_FEATURES is None:
-        raise HTTPException(
-            status_code=503, detail="Servicio no disponible temporalmente."
-        )
+        raise HTTPException(status_code=503, detail="Servicio no disponible temporalmente.")
 
     try:
         # 1. Validar fecha
@@ -86,14 +82,14 @@ def predict_sales(request: PredictRequest):
         except ValueError:
             raise HTTPException(
                 status_code=400, detail="Formato de fecha inválido. Usa YYYY-MM-DD."
-            )
+            )  # noqa: E501
 
         # 2. BUSCAR LOS DATOS REALES en el DataFrame cargado
         filtro = (
             (DF_FEATURES["Store"] == request.store)
             & (DF_FEATURES["Dept"] == request.dept)
             & (DF_FEATURES["Date"] == request.date)
-        )
+        )  # noqa: E501
 
         fila_real = DF_FEATURES[filtro].copy()
 
@@ -101,7 +97,7 @@ def predict_sales(request: PredictRequest):
         if fila_real.empty:
             raise HTTPException(
                 status_code=404,
-                detail=f"No se encontraron features para Store {request.store}, Dept {request.dept} en {request.date}.",
+                detail=f"No se encontraron features para Store {request.store}, Dept {request.dept} en {request.date}.",  # noqa: E501
             )
 
         # 3. PREPARAR LA FILA PARA EL MODELO
@@ -155,4 +151,4 @@ def predict_sales(request: PredictRequest):
     except Exception as e:
         # SI ALGO FALLA, este bloque lo atrapa e imprime el error exacto
         print(f"❌ Error interno durante predicción: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error interno general: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error interno general: {str(e)}")  # noqa: E501

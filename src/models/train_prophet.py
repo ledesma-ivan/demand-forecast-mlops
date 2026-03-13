@@ -12,9 +12,7 @@ def train_predict_prophet(train, test):
     )
     test_prophet = test[["Date", "IsHoliday"]].rename(columns={"Date": "ds"})
 
-    modelo = Prophet(
-        yearly_seasonality=True, weekly_seasonality=False, daily_seasonality=False
-    )
+    modelo = Prophet(yearly_seasonality=True, weekly_seasonality=False, daily_seasonality=False)
     modelo.add_regressor("IsHoliday")
     modelo.fit(train_prophet)
 

@@ -44,20 +44,14 @@ def create_features(df):
     # 4. Creando Rolling Features
     windows = [4, 8, 12]
     for w in windows:
-        data[f"Rolling_Mean_{w}"] = grouped.transform(
-            lambda x: x.shift(1).rolling(window=w).mean()
-        )
-        data[f"Rolling_Std_{w}"] = grouped.transform(
-            lambda x: x.shift(1).rolling(window=w).std()
-        )
-        data[f"Rolling_Max_{w}"] = grouped.transform(
-            lambda x: x.shift(1).rolling(window=w).max()
-        )
+        data[f"Rolling_Mean_{w}"] = grouped.transform(lambda x: x.shift(1).rolling(window=w).mean())
+        data[f"Rolling_Std_{w}"] = grouped.transform(lambda x: x.shift(1).rolling(window=w).std())
+        data[f"Rolling_Max_{w}"] = grouped.transform(lambda x: x.shift(1).rolling(window=w).max())
 
     # 5. Creando Features de Series Cruzadas
-    data["Dept_Avg_Sales_All_Stores"] = data.groupby(["Date", "Dept"])[
-        "Weekly_Sales"
-    ].transform("mean")
+    data["Dept_Avg_Sales_All_Stores"] = data.groupby(["Date", "Dept"])["Weekly_Sales"].transform(
+        "mean"
+    )
     data["Store_Rank_In_Dept"] = data.groupby(["Date", "Dept"])["Weekly_Sales"].rank(
         ascending=False, method="dense"
     )
