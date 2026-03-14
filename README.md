@@ -74,6 +74,7 @@ LLM Reporting (Gemini AI → /report endpoint)
  ┣ 📂 tests/                # pytest test suite
  ┣ 📂 models/               # Serialized trained models
  ┣ 📂 mlruns/               # MLflow artifacts
+ ┣ 📂 requirements          # Environment-specific dependencies (base, dev, test)
  ┣ 📜 run_pipeline.py       # Entrypoint: train, evaluate and register
  ┣ 📜 dvc.yaml              # DVC pipeline definition
  ┣ 📜 Dockerfile
