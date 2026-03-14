@@ -21,3 +21,6 @@ mlruns/
 
 # Coverage reports
 .coverage
+
+# Environment variables
+.env
