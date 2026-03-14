@@ -193,13 +193,15 @@ curl http://127.0.0.1:8000/report
 
 ## 📈 Model Results
 
-| Model | RMSE | MAPE |
-|-------|------|------|
-| LSTM | 1,098.77 | 5.1% |
-| XGBoost | 1,640.57 | 4.0% |
-| Prophet | 2,313.03 | 9.4% |
+| Model   | RMSE      | MAPE | Training Time |
+|---------|-----------|------|---------------|
+| LSTM    | 1,098.77  | 5.1% | ~1m 10s       |
+| XGBoost | 1,640.57  | 4.0% | ~11s          |
+| Prophet | 2,313.03  | 9.4% | ~19s          |
 
-> LSTM achieves the lowest RMSE while XGBoost leads on MAPE — trade-off between overall magnitude error and percentage accuracy. All runs are tracked and compared via MLflow.
+> LSTM achieves the lowest RMSE while XGBoost leads on MAPE and training efficiency (~8x faster).
+> For production use cases requiring frequent retraining, XGBoost offers the best accuracy/speed trade-off.
+> All runs are tracked and compared via MLflow.
 
 ---
 
