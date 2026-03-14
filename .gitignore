@@ -15,3 +15,9 @@ mlruns/
 
 # OS
 .DS_Storemlruns/
+
+# Database files
+*.db
+
+# Coverage reports
+.coverage
