@@ -1,0 +1,7 @@
+demand_forecast:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "dbt/walmart.duckdb"
+      threads: 4

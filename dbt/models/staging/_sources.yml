@@ -1,0 +1,44 @@
+version: 2
+
+sources:
+  - name: raw
+    description: Raw Walmart Kaggle dataset loaded into DuckDB via dbt/load_sources.py
+    tables:
+      - name: raw_train
+        description: Weekly sales per store/department (421,570 rows, 2010–2012)
+        columns:
+          - name: Store
+            description: Store identifier (1–45)
+          - name: Dept
+            description: Department identifier (1–99)
+          - name: Date
+            description: Week start date (YYYY-MM-DD)
+          - name: Weekly_Sales
+            description: Gross weekly sales in USD
+          - name: IsHoliday
+            description: TRUE if the week contains a public holiday
+
+      - name: raw_features
+        description: Weekly store-level contextual features (temperature, fuel, markdowns, CPI)
+        columns:
+          - name: Store
+          - name: Date
+          - name: Temperature
+          - name: Fuel_Price
+          - name: MarkDown1
+          - name: MarkDown2
+          - name: MarkDown3
+          - name: MarkDown4
+          - name: MarkDown5
+          - name: CPI
+          - name: Unemployment
+          - name: IsHoliday
+
+      - name: raw_stores
+        description: Store metadata — type (A/B/C) and total size in square feet
+        columns:
+          - name: Store
+          - name: Type
+            description: Store tier — A (largest), B (medium), C (smallest)
+          - name: Size
+            description: Store size in square feet

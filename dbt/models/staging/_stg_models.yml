@@ -1,0 +1,74 @@
+version: 2
+
+models:
+  - name: stg_sales
+    description: Cleaned and typed weekly sales records — one row per store/dept/week.
+    columns:
+      - name: store_id
+        description: Store identifier (1–45)
+        tests:
+          - not_null
+      - name: dept_id
+        description: Department identifier
+        tests:
+          - not_null
+      - name: sale_date
+        description: Week start date
+        tests:
+          - not_null
+      - name: weekly_sales
+        description: Gross weekly sales in USD
+        tests:
+          - not_null
+      - name: is_holiday
+        description: True if the week contains a public holiday
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false]
+
+  - name: stg_features
+    description: Store-level contextual features with markdown nulls filled as 0.
+    columns:
+      - name: store_id
+        tests:
+          - not_null
+      - name: sale_date
+        tests:
+          - not_null
+      - name: markdown_1
+        tests:
+          - not_null
+      - name: markdown_2
+        tests:
+          - not_null
+      - name: markdown_3
+        tests:
+          - not_null
+      - name: markdown_4
+        tests:
+          - not_null
+      - name: markdown_5
+        tests:
+          - not_null
+
+  - name: stg_stores
+    description: Store metadata with ordinal type encoding (A=3, B=2, C=1).
+    columns:
+      - name: store_id
+        tests:
+          - not_null
+          - unique
+      - name: store_type
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['A', 'B', 'C']
+      - name: store_type_num
+        tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3]
+      - name: store_size
+        tests:
+          - not_null

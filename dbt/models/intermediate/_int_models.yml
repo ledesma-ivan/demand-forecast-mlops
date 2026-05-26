@@ -1,0 +1,40 @@
+version: 2
+
+models:
+  - name: int_features
+    description: >
+      Full feature set per store/dept/week. Joins all staging sources and computes:
+      lag features (1, 2, 4, 8, 52 weeks), rolling aggregations (mean/std/max over
+      4/8/12-week windows), and cross-store department rankings (avg sales, dense rank).
+      Materialized as a view — mart_training_set applies the final filter.
+    columns:
+      - name: store_id
+        tests:
+          - not_null
+      - name: dept_id
+        tests:
+          - not_null
+      - name: sale_date
+        tests:
+          - not_null
+      - name: weekly_sales
+        tests:
+          - not_null
+      - name: week_of_year
+        tests:
+          - not_null
+      - name: month
+        tests:
+          - not_null
+      - name: quarter
+        tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3, 4]
+      - name: store_type
+        tests:
+          - accepted_values:
+              values: ['A', 'B', 'C']
+      - name: active_markdowns
+        tests:
+          - not_null

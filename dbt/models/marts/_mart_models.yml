@@ -1,0 +1,39 @@
+version: 2
+
+models:
+  - name: mart_training_set
+    description: >
+      Final training-ready dataset consumed by run_pipeline.py via MLflow.
+      Materialized as a DuckDB table and exported to
+      data/processed/dbt_features/mart_training_set.parquet by dbt/export_mart.py.
+      Rows with null lag features (first weeks per store/dept) are filtered out.
+    columns:
+      - name: store_id
+        tests:
+          - not_null
+      - name: dept_id
+        tests:
+          - not_null
+      - name: sale_date
+        tests:
+          - not_null
+      - name: weekly_sales
+        tests:
+          - not_null
+      - name: sales_lag_1
+        tests:
+          - not_null
+      - name: sales_lag_2
+        tests:
+          - not_null
+      - name: week_of_year
+        tests:
+          - not_null
+      - name: store_type
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['A', 'B', 'C']
+      - name: active_markdowns
+        tests:
+          - not_null
