@@ -1,5 +1,7 @@
 import os
 import time
+import urllib.request
+import urllib.error
 
 import google.generativeai as genai  # Añadido para Gemini
 import mlflow
@@ -19,12 +21,20 @@ from src.models.train_xgboost import temporal_train_test_split, train_predict_xg
 def main():
     print("--- INICIANDO TORNEO DE MODELOS CON MLFLOW ---")
 
-    # NUEVO: Esperar 10 segundos para que el servidor de MLflow inicie en Docker
-    print("Esperando 10 segundos a que el servidor MLflow esté listo...")
-    time.sleep(10)
+    tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
+    health_url = tracking_uri.rstrip("/") + "/health"
+    print(f"Esperando a que MLflow esté listo en {health_url}...")
+    for attempt in range(30):
+        try:
+            urllib.request.urlopen(health_url, timeout=2)
+            print(f"MLflow listo (intento {attempt + 1})")
+            break
+        except (urllib.error.URLError, OSError):
+            time.sleep(2)
+    else:
+        raise RuntimeError("MLflow no respondió después de 60 segundos. Abortando.")
 
     # 1. Configurar MLflow Tracking
-    tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
     mlflow.set_tracking_uri(tracking_uri)
 
     mlflow.set_experiment("Walmart_Demand_Forecasting")

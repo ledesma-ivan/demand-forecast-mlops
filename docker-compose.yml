@@ -1,7 +1,10 @@
-version: '3.8'
+# Docker Compose v2 spec (sin "version:" — requerido para service_completed_successfully)
 
 services:
-  # Servicio 1: El servidor de MLflow
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # MLflow UI
+  # ─────────────────────────────────────────────────────────────────────────
   mlflow_ui:
     build: .
     container_name: walmart_mlflow_ui
@@ -16,24 +19,123 @@ services:
     volumes:
       - ./mlruns:/app/mlruns
       - mlflow_data:/app/mlflow_data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
 
-  # Servicio 2: Tu script de entrenamiento
+  # ─────────────────────────────────────────────────────────────────────────
+  # dbt + DuckDB  →  data/processed/dbt_features/mart_training_set.parquet
+  # ─────────────────────────────────────────────────────────────────────────
+  dbt_job:
+    build:
+      context: .
+      dockerfile: Dockerfile.dbt
+    container_name: walmart_dbt_job
+    volumes:
+      - ./data:/app/data
+      - ./dbt:/app/dbt
+    working_dir: /app
+    environment:
+      - DBT_DB_PATH=/app/dbt/walmart.duckdb
+      - DATA_PATH=/app/data
+      - DBT_EXPORT_PATH=/app/data/processed/dbt_features/mart_training_set.parquet
+    command: >
+      sh -c "
+        python dbt/load_sources.py &&
+        dbt run  --profiles-dir dbt --project-dir dbt &&
+        dbt test --profiles-dir dbt --project-dir dbt &&
+        python dbt/export_mart.py
+      "
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # PySpark cluster  →  data/processed/spark_features/ (Parquet particionado)
+  # ─────────────────────────────────────────────────────────────────────────
+  spark-master:
+    image: bitnami/spark:3.5
+    container_name: spark_master
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - SPARK_MASTER_OPTS=-Dspark.deploy.defaultCores=2
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  spark-worker:
+    image: bitnami/spark:3.5
+    container_name: spark_worker
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=2G
+      - SPARK_WORKER_CORES=2
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    depends_on:
+      spark-master:
+        condition: service_healthy
+
+  spark-job:
+    image: bitnami/spark:3.5
+    container_name: spark_feature_job
+    volumes:
+      - ./data:/opt/bitnami/spark/work-dir/data
+      - ./spark:/opt/bitnami/spark/work-dir/spark
+    working_dir: /opt/bitnami/spark/work-dir
+    environment:
+      - INPUT_PATH=/opt/bitnami/spark/work-dir/data
+      - OUTPUT_PATH=/opt/bitnami/spark/work-dir/data/processed/spark_features
+    command: >
+      spark-submit
+      --master spark://spark-master:7077
+      --name "walmart-feature-engineering"
+      --conf spark.sql.shuffle.partitions=50
+      --conf spark.executor.memory=1g
+      spark/feature_pipeline.py
+    depends_on:
+      spark-master:
+        condition: service_healthy
+      spark-worker:
+        condition: service_started
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Entrenamiento  (espera a MLflow + dbt + Spark antes de arrancar)
+  # ─────────────────────────────────────────────────────────────────────────
   training_job:
     build: .
     container_name: walmart_training_job
     network_mode: "service:mlflow_ui"
     command: python run_pipeline.py
     environment:
-      # <--- CAMBIO 2: Usar http://mlflow_ui:5000 (nombre del servicio de arriba)
       - MLFLOW_TRACKING_URI=http://127.0.0.1:5000
       - GEMINI_API_KEY=${GEMINI_API_KEY}
     volumes:
       - ./data:/app/data
       - ./src:/app/src
+      - ./dbt:/app/dbt
       - ./mlruns:/app/mlruns
       - mlflow_data:/app/mlflow_data
     depends_on:
-      - mlflow_ui
+      mlflow_ui:
+        condition: service_healthy
+      dbt_job:
+        condition: service_completed_successfully
+      spark-job:
+        condition: service_completed_successfully
 
 volumes:
   mlflow_data:

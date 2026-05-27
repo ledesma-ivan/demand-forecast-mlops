@@ -59,7 +59,7 @@ LLM Reporting (Gemini AI → /report endpoint)
 | Experiment tracking | MLflow + SQLite | Parameters, metrics and artifact logging |
 | Model registry | MLflow | Versioned model storage and promotion |
 | Serving | FastAPI + Uvicorn | REST predictions endpoint |
-| Orchestration | Docker Compose | Training job + MLflow UI |
+| Orchestration | Docker Compose | Full pipeline: dbt, PySpark, MLflow and training in one command |
 | LLM reporting | Gemini AI | Natural language summaries from run metrics |
 
 ---
@@ -98,9 +98,9 @@ demand-forecast-mlops/
 ├── requirements/              # Environment-specific dependencies
 ├── run_pipeline.py            # Entrypoint: train, evaluate and register
 ├── dvc.yaml                   # DVC pipeline definition
-├── Dockerfile
-├── docker-compose.yml         # Orchestration: training job + MLflow UI
-├── docker-compose.spark.yml   # Orchestration: PySpark feature engineering cluster
+├── Dockerfile                 # Training + MLflow image
+├── Dockerfile.dbt             # Lightweight dbt + DuckDB image
+├── docker-compose.yml         # Full pipeline: dbt, PySpark, MLflow, training
 └── pyproject.toml             # Ruff and tooling config
 ```
 
@@ -111,11 +111,10 @@ demand-forecast-mlops/
 Create a `.env` file in the project root before running:
 
 ```
-GOOGLE_API_KEY=your_api_key_here
-MLFLOW_TRACKING_URI=sqlite:///mlflow.db
+GEMINI_API_KEY=your_api_key_here
 ```
 
-`GOOGLE_API_KEY` is required for the `/report` endpoint (Gemini AI). The rest of the pipeline runs without it.
+`GEMINI_API_KEY` is required for the `/report` endpoint (Gemini AI). The rest of the pipeline runs without it.
 
 ---
 
@@ -123,43 +122,58 @@ MLFLOW_TRACKING_URI=sqlite:///mlflow.db
 
 ### Option A — Docker (recommended)
 
-#### MLflow training pipeline
+One command runs the full pipeline: dbt + DuckDB, PySpark and model training, all orchestrated automatically.
 
 ```bash
 git clone https://github.com/ledesma-ivan/demand-forecast-mlops.git
 cd demand-forecast-mlops
 
+# Pull data (requires DVC configured) — or place CSVs manually in data/
 dvc pull
 
 docker compose up --build
 ```
 
+**Execution order (managed by Docker Compose healthchecks):**
+
+```
+dbt_job ──────────────────────────┐
+                                  ▼
+spark-master → spark-worker → spark-job ──► training_job
+                                  ▲
+mlflow_ui (healthcheck OK) ───────┘
+```
+
+`dbt_job` and `spark-job` run in parallel. `training_job` starts only after both complete successfully and MLflow is ready.
+
 | Service | URL |
 |---------|-----|
 | MLflow UI | http://localhost:5000 |
+| Spark Master UI | http://localhost:8080 |
 
-To run only the training job:
+**Outputs after a full run:**
+
+| Path | Producer | Content |
+|------|----------|---------|
+| `data/processed/dbt_features/mart_training_set.parquet` | dbt + DuckDB | SQL-transformed feature set |
+| `data/processed/spark_features/` | PySpark | Parquet partitioned by Store/Week |
+| `mlruns/` | MLflow | Experiment runs, metrics, model artifacts |
+
+To run only the training job (skipping dbt and Spark):
 
 ```bash
 docker compose run training_job
 ```
 
-#### dbt + DuckDB transformation pipeline
+---
+
+### dbt lineage graph (optional)
 
 ```bash
 pip install -r requirements/dbt.txt
 
-python dbt/load_sources.py
-
-dbt run --profiles-dir dbt --project-dir dbt
-
-dbt test --profiles-dir dbt --project-dir dbt
-
-python dbt/export_mart.py
-
-# Generate lineage graph
 dbt docs generate --profiles-dir dbt --project-dir dbt
-dbt docs serve --profiles-dir dbt --project-dir dbt
+dbt docs serve   --profiles-dir dbt --project-dir dbt
 ```
 
 | Model | Layer | Description |
@@ -172,20 +186,6 @@ dbt docs serve --profiles-dir dbt --project-dir dbt
 
 ---
 
-#### PySpark feature engineering pipeline
-
-```bash
-docker-compose -f docker-compose.spark.yml up --abort-on-container-exit
-```
-
-| Service | URL |
-|---------|-----|
-| Spark Master UI | http://localhost:8080 |
-
-Reads `data/train.csv`, `data/features.csv` and `data/stores.csv`, computes all features using the Spark DataFrame API, and writes the result to `data/processed/spark_features/` as Parquet partitioned by `Store` and `Week`. The cluster shuts down automatically when the job finishes.
-
----
-
 ### Option B — Local
 
 ```bash
@@ -194,17 +194,21 @@ cd demand-forecast-mlops
 
 python3.11 -m venv venv
 source venv/bin/activate          # Mac/Linux
-venv\Scripts\activate             # Windows
+# venv\Scripts\activate           # Windows
 
 pip install -r requirements.txt
 
 dvc pull
 
+# Terminal 1 — MLflow server
+mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlruns
+
+# Terminal 2 — training pipeline
+export MLFLOW_TRACKING_URI=sqlite:///mlflow.db
 python run_pipeline.py
 
+# Terminal 3 — REST API
 uvicorn src.api.main:app --reload
-
-mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlruns
 ```
 
 | Service | URL |
@@ -263,11 +267,13 @@ LSTM achieves the lowest RMSE while XGBoost leads on MAPE and training efficienc
 - **Feature engineering (Pandas):** Temporal features (week, month, quarter, year-end), markdowns, sales lags (1, 2, 4, 8, 52 weeks), rolling statistics (mean, std, max), and cross-store/department features
 - **Feature engineering (PySpark):** Full re-implementation using the Spark DataFrame API — window functions for lag features (`lag(n).over`), rolling aggregations (`rowsBetween(-w, -1)`), and cross-series features (`dense_rank().over`); output as Parquet partitioned by Store/Week
 - **Feature engineering (dbt + DuckDB):** SQL-native transformation layer with dbt Core and DuckDB adapter — three model layers (staging/intermediate/marts), declarative schema tests (`not_null`, `unique`, `accepted_values`), and `dbt docs` lineage graph; output as Parquet consumed by the existing MLflow pipeline
+- **Orchestration:** Single `docker compose up --build` runs dbt, PySpark and model training with dependency ordering enforced by Docker Compose healthchecks and `service_completed_successfully` conditions
+- **MLflow readiness:** `training_job` polls the MLflow `/health` endpoint (up to 60s) instead of a fixed sleep, so startup adapts to the actual server boot time
 - **Models evaluated:** XGBoost as baseline, Prophet for seasonality and trend, LSTM with TensorFlow for non-linear sequential patterns
 - **Evaluation metrics:** RMSE and MAPE per model, automatically logged in MLflow for cross-run comparison
 - **Storage:** SQLite for MLflow experiment persistence and data querying via SQL
 - **Visualization:** Matplotlib for EDA in notebooks, Plotly for interactive model comparison vs real sales
-- **LLM reporting:** Gemini AI (`gemini-3.1-flash-lite-preview`) to automatically generate natural language reports from MLflow run metrics
+- **LLM reporting:** Gemini AI to automatically generate natural language reports from MLflow run metrics
 
 ---
 
