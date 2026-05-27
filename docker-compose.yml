@@ -51,66 +51,25 @@ services:
       "
 
   # ─────────────────────────────────────────────────────────────────────────
-  # PySpark cluster  →  data/processed/spark_features/ (Parquet particionado)
+  # PySpark (modo local) →  data/processed/spark_features/ (Parquet)
   # ─────────────────────────────────────────────────────────────────────────
-  spark-master:
-    image: bitnami/spark:3
-    container_name: spark_master
-    ports:
-      - "8080:8080"
-      - "7077:7077"
-    environment:
-      - SPARK_MODE=master
-      - SPARK_RPC_AUTHENTICATION_ENABLED=no
-      - SPARK_RPC_ENCRYPTION_ENABLED=no
-      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
-      - SPARK_SSL_ENABLED=no
-      - SPARK_MASTER_OPTS=-Dspark.deploy.defaultCores=2
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
-
-  spark-worker:
-    image: bitnami/spark:3
-    container_name: spark_worker
-    environment:
-      - SPARK_MODE=worker
-      - SPARK_MASTER_URL=spark://spark-master:7077
-      - SPARK_WORKER_MEMORY=2G
-      - SPARK_WORKER_CORES=2
-      - SPARK_RPC_AUTHENTICATION_ENABLED=no
-      - SPARK_RPC_ENCRYPTION_ENABLED=no
-      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
-      - SPARK_SSL_ENABLED=no
-    depends_on:
-      spark-master:
-        condition: service_healthy
-
   spark-job:
-    image: bitnami/spark:3
+    image: apache/spark:3.5.0
     container_name: spark_feature_job
+    user: root
     volumes:
-      - ./data:/opt/bitnami/spark/work-dir/data
-      - ./spark:/opt/bitnami/spark/work-dir/spark
-    working_dir: /opt/bitnami/spark/work-dir
+      - ./data:/opt/spark/work-dir/data
+      - ./spark:/opt/spark/work-dir/spark
+    working_dir: /opt/spark/work-dir
     environment:
-      - INPUT_PATH=/opt/bitnami/spark/work-dir/data
-      - OUTPUT_PATH=/opt/bitnami/spark/work-dir/data/processed/spark_features
+      - INPUT_PATH=/opt/spark/work-dir/data
+      - OUTPUT_PATH=/opt/spark/work-dir/data/processed/spark_features
     command: >
-      spark-submit
-      --master spark://spark-master:7077
+      /opt/spark/bin/spark-submit
+      --master local[*]
       --name "walmart-feature-engineering"
-      --conf spark.sql.shuffle.partitions=50
-      --conf spark.executor.memory=1g
+      --conf spark.sql.shuffle.partitions=8
       spark/feature_pipeline.py
-    depends_on:
-      spark-master:
-        condition: service_healthy
-      spark-worker:
-        condition: service_started
 
   # ─────────────────────────────────────────────────────────────────────────
   # Entrenamiento  (espera a MLflow + dbt + Spark antes de arrancar)

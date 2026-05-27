@@ -9,18 +9,15 @@ version: '3.8'
 
 services:
   spark-master:
-    image: bitnami/spark:3
+    image: apache/spark:3.5.0
     container_name: spark_master
+    user: root
     environment:
-      - SPARK_MODE=master
-      - SPARK_RPC_AUTHENTICATION_ENABLED=no
-      - SPARK_RPC_ENCRYPTION_ENABLED=no
-      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
-      - SPARK_SSL_ENABLED=no
-      - SPARK_MASTER_OPTS=-Dspark.deploy.defaultCores=2
+      - SPARK_NO_DAEMONIZE=true
     ports:
-      - "8080:8080"   # Spark Master Web UI
-      - "7077:7077"   # Spark Master RPC
+      - "8080:8080"
+      - "7077:7077"
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080"]
       interval: 10s
@@ -29,38 +26,36 @@ services:
       start_period: 20s
 
   spark-worker:
-    image: bitnami/spark:3
+    image: apache/spark:3.5.0
     container_name: spark_worker
+    user: root
     environment:
-      - SPARK_MODE=worker
-      - SPARK_MASTER_URL=spark://spark-master:7077
-      - SPARK_WORKER_MEMORY=2G
+      - SPARK_NO_DAEMONIZE=true
+      - SPARK_WORKER_MEMORY=2g
       - SPARK_WORKER_CORES=2
-      - SPARK_RPC_AUTHENTICATION_ENABLED=no
-      - SPARK_RPC_ENCRYPTION_ENABLED=no
-      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
-      - SPARK_SSL_ENABLED=no
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
     depends_on:
       spark-master:
         condition: service_healthy
 
   spark-job:
-    image: bitnami/spark:3
+    image: apache/spark:3.5.0
     container_name: spark_feature_job
+    user: root
     depends_on:
       spark-master:
         condition: service_healthy
       spark-worker:
         condition: service_started
     volumes:
-      - ./data:/opt/bitnami/spark/work-dir/data
-      - ./spark:/opt/bitnami/spark/work-dir/spark
-    working_dir: /opt/bitnami/spark/work-dir
+      - ./data:/opt/spark/work-dir/data
+      - ./spark:/opt/spark/work-dir/spark
+    working_dir: /opt/spark/work-dir
     environment:
-      - INPUT_PATH=/opt/bitnami/spark/work-dir/data
-      - OUTPUT_PATH=/opt/bitnami/spark/work-dir/data/processed/spark_features
+      - INPUT_PATH=/opt/spark/work-dir/data
+      - OUTPUT_PATH=/opt/spark/work-dir/data/processed/spark_features
     command: >
-      spark-submit
+      /opt/spark/bin/spark-submit
       --master spark://spark-master:7077
       --name "walmart-feature-engineering"
       --conf spark.sql.shuffle.partitions=50
